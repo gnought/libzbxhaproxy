@@ -30,8 +30,9 @@ int zbx_module_uninit(void) {
 
 static int zbxhaproxy_info(AGENT_REQUEST* request, AGENT_RESULT* result) {
     if (request->nparam != 2) {
-        SET_MSG_RESULT(result, strdup("Invalid number of parameters. "
-                                      "Usage haproxy.info[socket, key]"));
+        SET_MSG_RESULT(result, zbx_strdup(NULL,
+                                          "Invalid number of parameters. "
+                                          "Usage haproxy.info[socket, key]"));
         return SYSINFO_RET_FAIL;
     }
 
@@ -39,15 +40,16 @@ static int zbxhaproxy_info(AGENT_REQUEST* request, AGENT_RESULT* result) {
     char* key = get_rparam(request, 1);
 
     char* value = haproxy_request_info(socket, key);
-    SET_STR_RESULT(result, strdup(value));
+    SET_STR_RESULT(result, zbx_strdup(NULL, value));
 
     return SYSINFO_RET_OK;
 }
 
 static int zbxhaproxy_stat(AGENT_REQUEST* request, AGENT_RESULT* result) {
     if (request->nparam != 4) {
-        SET_MSG_RESULT(result, strdup("Invalid number of parameters. "
-                                      "Usage haproxy.stat[socket, pxname, svname, key]"));
+        SET_MSG_RESULT(result, zbx_strdup(NULL,
+                                          "Invalid number of parameters. "
+                                          "Usage haproxy.stat[socket, pxname, svname, key]"));
         return SYSINFO_RET_FAIL;
     }
 
@@ -57,7 +59,7 @@ static int zbxhaproxy_stat(AGENT_REQUEST* request, AGENT_RESULT* result) {
     char* key = get_rparam(request, 3);
 
     char* value = haproxy_request_stat(socket, pxname, svname, key);
-    SET_STR_RESULT(result, strdup(value));
+    SET_STR_RESULT(result, zbx_strdup(NULL, value));
 
     return SYSINFO_RET_OK;
 }
@@ -66,8 +68,9 @@ static int zbxhaproxy_discovery(AGENT_REQUEST* request, AGENT_RESULT* result) {
     zabbix_log(LOG_LEVEL_DEBUG, "module %s have discovery", HAPROXY_MOD_NAME);
 
     if (request->nparam != 1) {
-        SET_MSG_RESULT(result, strdup("Invalid number of parameters. "
-                                      "Usage haproxy.discovery[socket]"));
+        SET_MSG_RESULT(result, zbx_strdup(NULL,
+                                          "Invalid number of parameters. "
+                                          "Usage haproxy.discovery[socket]"));
         return SYSINFO_RET_FAIL;
     }
 
@@ -80,6 +83,6 @@ static int zbxhaproxy_discovery(AGENT_REQUEST* request, AGENT_RESULT* result) {
 }
 
 static int zbxhaproxy_test(AGENT_REQUEST* request, AGENT_RESULT* result) {
-    SET_STR_RESULT(result, strdup("Hello"));
+    SET_STR_RESULT(result, zbx_strdup(NULL, "Hello"));
     return SYSINFO_RET_OK;
 }

@@ -22,7 +22,7 @@ void free_haproxy_servers(haproxy_servers_t servers) {
 
     while (cur != NULL) {
         next = cur->next;
-        free(cur);
+        zbx_free(cur);
         cur = next;
     }
 }
@@ -76,11 +76,8 @@ haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, 
  *      NULL - memory allocation error
  */
 haproxy_server_t* new_haproxy_server(char* stat) {
-    haproxy_server_t* sv = (haproxy_server_t*)malloc(sizeof(haproxy_server_t));
+    haproxy_server_t* sv = (haproxy_server_t*)zbx_malloc(NULL, sizeof(haproxy_server_t));
 
-    if (sv == NULL) {
-        return NULL;
-    }
     sv->next = NULL;
     memset(sv->stat, 0, MAX_SIZE_STAT_LINE);
     sv->num_offsets = 0;
@@ -105,7 +102,7 @@ haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_serv
     if (prev->next != NULL) {
         // replace exists server in list
         server->next = prev->next->next;
-        free(prev->next);
+        zbx_free(prev->next);
         prev->next = server;
     } else {
         // insert new server in list
