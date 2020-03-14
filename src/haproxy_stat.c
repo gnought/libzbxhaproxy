@@ -266,6 +266,7 @@ char* haproxy_metric_value(char* pxname, char* svname, char* metric) {
     int metric_id;
 
     for (metric_id = 0; metric_id < MAX_NUM_METRICS; metric_id++) {
+        if (haproxy_metrics[metric_id] == NULL) continue;
         if (strcmp(metric, haproxy_metrics[metric_id]) == 0) break;
     }
     if (metric_id == MAX_NUM_METRICS) return NULL;
