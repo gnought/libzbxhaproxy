@@ -4,6 +4,9 @@
  *
  * Created on October 20, 2019, 10:40 PM
  */
+#if __APPLE__
+#define MSG_NOSIGNAL 0x2000 /* don't raise SIGPIPE */
+#endif
 
 #ifndef HAPROXY_STAT_H
 #define HAPROXY_STAT_H
