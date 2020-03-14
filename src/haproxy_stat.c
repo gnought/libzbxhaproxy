@@ -20,6 +20,7 @@ int haproxy_uninit() {
 
 int haproxy_connect(char* socket_path) {
     struct sockaddr_un haproxy_stat_addr;
+    size_t addr_length;
 
     if ((haproxy_socket_fd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {
         return HAPROXY_FAIL;
@@ -28,10 +29,11 @@ int haproxy_connect(char* socket_path) {
     memset(&haproxy_stat_addr, 0, sizeof(struct sockaddr_un));
     haproxy_stat_addr.sun_family = AF_UNIX;
     strcpy(haproxy_stat_addr.sun_path, socket_path);
+    addr_length = sizeof(haproxy_stat_addr.sun_family) + strlen(haproxy_stat_addr.sun_path);
 
     for (int i = 0; i < MAX_RETRIES; i++) {
         if (connect(haproxy_socket_fd, (struct sockaddr*)&haproxy_stat_addr,
-                    sizeof(haproxy_stat_addr)) != -1) {
+                    addr_length) != -1) {
             return HAPROXY_OK;
         }
     }
