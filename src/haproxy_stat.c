@@ -49,20 +49,21 @@ int haproxy_cmd(char* socket, char* cmd) {
 }
 
 char* haproxy_discovery(char* socket) {
-    haproxy_server_t* sv = NULL;
-    char *pxname, *svname;
-    char* data;
-    char buf[4096];
     int data_size = 4096;
-    haproxy_update_stat(socket);
 
-    sv = haproxy_stats;
-    data = (char*)calloc(data_size, sizeof(char));
+    haproxy_update_stat(socket);
+    haproxy_server_t* sv = haproxy_stats;
+
+    char* data = (char*)calloc(data_size, sizeof(char));
     if (data == NULL) {
         fprintf(stderr, "Cannot allocate memory for data in haproxy_discovery\n");
         return NULL;
     }
     strcat(data, "{\"data\":[");
+
+    char* pxname = NULL;
+    char* svname = NULL;
+    char buf[4096];
 
     while (sv != NULL) {
         pxname = sv->stat;
@@ -90,12 +91,13 @@ char* haproxy_discovery(char* socket) {
 }
 
 int haproxy_recv(char** ret_data) {
-    int data_size = 4096, bytes_read, total_bytes_read = 0;
-    char *data, buffer[4096];
-
     assert(*ret_data != NULL);
+
+    int data_size = 4096, bytes_read, total_bytes_read = 0;
+    char buffer[4096];
+
     memset(buffer, 0, sizeof(buffer));
-    data = (char*)calloc(data_size, sizeof(char));
+    char* data = (char*)calloc(data_size, sizeof(char));
     if (data == NULL) {
         fprintf(stderr, "Cannot allocate memory for data in haproxy_recv\n");
         return HAPROXY_FAIL;
@@ -123,6 +125,7 @@ int haproxy_recv(char** ret_data) {
     if (bytes_read == -1) {
         if (data != NULL) {
             free(data);
+            data = NULL;
         }
         return HAPROXY_FAIL;
     }
@@ -133,7 +136,7 @@ int haproxy_recv(char** ret_data) {
 }
 
 int haproxy_update_info(char* socket) {
-    char* recv_buffer;
+    char* recv_buffer = NULL;
     if (haproxy_cmd(socket, "show info\n") == HAPROXY_FAIL) goto get_info_fail;
     if (haproxy_recv(&recv_buffer) == HAPROXY_FAIL) goto get_info_fail;
     haproxy_parse_info(recv_buffer);
@@ -148,7 +151,7 @@ get_info_fail:
 }
 
 int haproxy_update_stat(char* socket) {
-    char* recv_buffer;
+    char* recv_buffer = NULL;
     if (haproxy_cmd(socket, "show stat\n") == HAPROXY_FAIL) goto get_stat_fail;
     if (haproxy_recv(&recv_buffer) == HAPROXY_FAIL) goto get_stat_fail;
     haproxy_parse_stat(recv_buffer);
@@ -163,11 +166,11 @@ get_stat_fail:
 }
 
 void haproxy_parse_info(char* s) {
-    char *line, *d;
+    char* d = NULL;
     char key[255], value[255];
     int n = 0;
 
-    line = (char*)strtok(s, "\n");
+    char* line = (char*)strtok(s, "\n");
 
     while (line != NULL) {
         memset(key, 0, 255);
@@ -188,13 +191,12 @@ void haproxy_parse_info(char* s) {
 }
 
 void haproxy_parse_stat_line(char* stat) {
-    char* d = NULL;
-    haproxy_server_t* item;
     int i = 0;
 
-    item = new_haproxy_server(stat);
+    haproxy_server_t* item = new_haproxy_server(stat);
     item->offsets[i++] = 0;
-    d = item->stat;
+    char* d = item->stat;
+
     while ((d = strchr(d, ',')) != NULL) {
         *d = '\0';
         item->offsets[i++] = (d - item->stat + 1) / sizeof(char);
@@ -206,11 +208,12 @@ void haproxy_parse_stat_line(char* stat) {
 }
 
 void haproxy_parse_metrics(char* s) {
+    if (haproxy_metrics[0]) return;
+
     char* d = s + 2;
     char* metric = d;
     int i = 0;
 
-    if (haproxy_metrics[0]) return;
     while ((d = strchr(d, ',')) != NULL) {
         *d = '\0';
         haproxy_metrics[i++] = strdup(metric);
@@ -219,9 +222,7 @@ void haproxy_parse_metrics(char* s) {
 }
 
 void haproxy_parse_stat(char* s) {
-    char* line;
-
-    line = (char*)strtok(s, "\n");
+    char* line = (char*)strtok(s, "\n");
 
     while (line != NULL) {
         if (line[0] == '#') {
@@ -234,28 +235,24 @@ void haproxy_parse_stat(char* s) {
 }
 
 char* haproxy_request_stat(char* socket, char* pxname, char* svname, char* metric) {
-    char* result;
-
     if (time(NULL) - stat_timestamp > CACHE_TTL) {
         haproxy_update_stat(socket);
         stat_timestamp = time(NULL);
     }
 
-    result = haproxy_metric_value(pxname, svname, metric);
+    char* result = haproxy_metric_value(pxname, svname, metric);
     if (result == NULL) return HAPROXY_NO_DATA;
 
     return result;
 }
 
 char* haproxy_request_info(char* socket, char* key) {
-    char* result;
-
     if (time(NULL) - info_timestamp > CACHE_TTL) {
         haproxy_update_info(socket);
         info_timestamp = time(NULL);
     }
 
-    result = haproxy_info_value(key);
+    char* result = haproxy_info_value(key);
     if (result == NULL) return HAPROXY_NO_DATA;
 
     return result;
@@ -267,14 +264,15 @@ char* haproxy_info_value(char* key) {
 
 char* haproxy_metric_value(char* pxname, char* svname, char* metric) {
     int metric_id;
-    haproxy_server_t* item;
 
     for (metric_id = 0; metric_id < MAX_NUM_METRICS; metric_id++) {
         if (strcmp(metric, haproxy_metrics[metric_id]) == 0) break;
     }
     if (metric_id == MAX_NUM_METRICS) return NULL;
 
-    if (NULL == (item = get_haproxy_server(haproxy_stats, pxname, svname))) {
+    haproxy_server_t* item = get_haproxy_server(haproxy_stats, pxname, svname);
+
+    if (item == NULL) {
         return NULL;
     }
 

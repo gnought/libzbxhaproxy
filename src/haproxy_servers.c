@@ -10,18 +10,15 @@
  *       0 - is not equal
  */
 int check_haproxy_server_name(haproxy_server_t* server, char* pxname, char* svname) {
-    char* sv_pxname = NULL;
-    char* sv_svname = NULL;
-
-    sv_pxname = server->stat;
-    sv_svname = server->stat + server->offsets[1];
+    char* sv_pxname = server->stat;
+    char* sv_svname = server->stat + server->offsets[1];
 
     return (strcmp(sv_pxname, pxname) == 0 && strcmp(sv_svname, svname) == 0);
 }
 
 void free_haproxy_servers(haproxy_servers_t servers) {
     haproxy_server_t* cur = servers;
-    haproxy_server_t* next;
+    haproxy_server_t* next = NULL;
 
     while (cur != NULL) {
         next = cur->next;
@@ -79,9 +76,9 @@ haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, 
  *      NULL - memory allocation error
  */
 haproxy_server_t* new_haproxy_server(char* stat) {
-    haproxy_server_t* sv;
+    haproxy_server_t* sv = (haproxy_server_t*)malloc(sizeof(haproxy_server_t));
 
-    if ((sv = (haproxy_server_t*)malloc(sizeof(haproxy_server_t))) == NULL) {
+    if (sv == NULL) {
         return NULL;
     }
     sv->next = NULL;
@@ -98,17 +95,13 @@ haproxy_server_t* new_haproxy_server(char* stat) {
  *      pointer to haproxy server list
  */
 haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_server_t* server) {
-    char* pxname = NULL;
-    char* svname = NULL;
-    haproxy_server_t* prev = NULL;
-
     if (servers == NULL)
         // `server` is first in list
         return server;
 
-    pxname = server->stat;
-    svname = server->stat + server->offsets[1];
-    prev = get_prev_haproxy_server(servers, pxname, svname);
+    char* pxname = server->stat;
+    char* svname = server->stat + server->offsets[1];
+    haproxy_server_t*  prev = get_prev_haproxy_server(servers, pxname, svname);
     if (prev->next != NULL) {
         // replace exists server in list
         server->next = prev->next->next;
