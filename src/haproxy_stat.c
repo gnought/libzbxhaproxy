@@ -28,7 +28,7 @@ int haproxy_connect(char* socket_path) {
 
     memset(&haproxy_stat_addr, 0, sizeof(struct sockaddr_un));
     haproxy_stat_addr.sun_family = AF_UNIX;
-    strcpy(haproxy_stat_addr.sun_path, socket_path);
+    zbx_strlcpy(haproxy_stat_addr.sun_path, socket_path, strlen(socket_path) + 1);
     addr_length = sizeof(haproxy_stat_addr.sun_family) + strlen(haproxy_stat_addr.sun_path);
 
     for (int i = 0; i < MAX_RETRIES; i++) {
@@ -62,12 +62,12 @@ char* haproxy_discovery(char* socket) {
 
     char* pxname = NULL;
     char* svname = NULL;
-    char buf[4096];
+    char* buf = NULL;
 
     while (sv != NULL) {
         pxname = sv->stat;
         svname = sv->stat + sv->offsets[1];
-        sprintf(buf, "{\"{#PXNAME}\":\"%s\",\"{#SVNAME}\":\"%s\"}", pxname, svname);
+        buf = zbx_dsprintf(buf, "{\"{#PXNAME}\":\"%s\",\"{#SVNAME}\":\"%s\"}", pxname, svname);
         //check if we have enough of free memory to append the content of the next buffer
         if ((strlen(data) + strlen(buf) + 4) > data_size) {
             //increment in one page size
@@ -79,6 +79,7 @@ char* haproxy_discovery(char* socket) {
             strcat(data, ",");
         }
         sv = sv->next;
+        zbx_free(buf);
     }
     strcat(data, "]}");
 

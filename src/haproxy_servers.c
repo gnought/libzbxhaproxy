@@ -81,7 +81,7 @@ haproxy_server_t* new_haproxy_server(char* stat) {
     sv->next = NULL;
     memset(sv->stat, 0, MAX_SIZE_STAT_LINE);
     sv->num_offsets = 0;
-    strcpy(sv->stat, stat);
+    zbx_strlcpy(sv->stat, stat, MAX_SIZE_STAT_LINE);
 
     return sv;
 }
@@ -98,7 +98,7 @@ haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_serv
 
     char* pxname = server->stat;
     char* svname = server->stat + server->offsets[1];
-    haproxy_server_t*  prev = get_prev_haproxy_server(servers, pxname, svname);
+    haproxy_server_t* prev = get_prev_haproxy_server(servers, pxname, svname);
     if (prev->next != NULL) {
         // replace exists server in list
         server->next = prev->next->next;
