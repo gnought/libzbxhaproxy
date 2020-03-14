@@ -29,22 +29,23 @@ int haproxy_connect(char* socket_path) {
     haproxy_stat_addr.sun_family = AF_UNIX;
     strcpy(haproxy_stat_addr.sun_path, socket_path);
 
-    if (connect(haproxy_socket_fd, (struct sockaddr*)&haproxy_stat_addr,
-                sizeof(haproxy_stat_addr)) < 0) {
-        return HAPROXY_FAIL;
+    for (int i = 0; i < MAX_RETRIES; i++) {
+        if (connect(haproxy_socket_fd, (struct sockaddr*)&haproxy_stat_addr,
+                    sizeof(haproxy_stat_addr)) != -1) {
+            return HAPROXY_OK;
+        }
     }
-
-    return HAPROXY_OK;
+    return HAPROXY_FAIL;
 }
 
 int haproxy_cmd(char* socket, char* cmd) {
-    for (int i = 0; i < MAX_RETRIES; i++) {
+    do {
         if (send(haproxy_socket_fd, cmd, strlen(cmd), MSG_NOSIGNAL) > 0) {
             return HAPROXY_OK;
         }
-        close(haproxy_socket_fd);
-        haproxy_connect(socket);
-    }
+    } while (haproxy_connect(socket) == HAPROXY_OK);
+
+    close(haproxy_socket_fd);
     return HAPROXY_FAIL;
 }
 
