@@ -16,8 +16,12 @@ build_dir:
 fix_config_h:
 	if test ! -f $(zbx_include)/config.h; then echo "" > $(zbx_include)/config.h; fi
 
-zbxhaproxy: hash_table.o prime.o haproxy_stat.o haproxy_servers.o zbxhaproxy.o
+zbxhaproxy: array.o hash_table.o prime.o haproxy_stat.o haproxy_servers.o zbxhaproxy.o
 	$(gcc) -shared -o $(build)/$(lib_name) $(addprefix $(build)/,$^)
+	strip -x $(build)/$(lib_name)
+
+array.o: $(addprefix $(src)/,array.c array.h)
+	$(gcc) $< -c -o $(addprefix $(build)/,$@)
 
 prime.o: $(addprefix $(src)/,prime.c prime.h)
 	$(gcc) $< -c -o $(addprefix $(build)/,$@)

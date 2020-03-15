@@ -4,7 +4,7 @@ int haproxy_init() {
     haproxy_info = ht_new();
     haproxy_socket_fd = 0;
     haproxy_stats = NULL;
-    memset(haproxy_metrics, 0, sizeof(haproxy_metrics));
+    haproxy_metrics = arr_init(INIT_NUM_METRICS);
     stat_timestamp = time(NULL) - 2 * CACHE_TTL;
     info_timestamp = time(NULL) - 2 * CACHE_TTL;
 
@@ -12,6 +12,7 @@ int haproxy_init() {
 }
 
 int haproxy_uninit() {
+    arr_free(haproxy_metrics);
     ht_del_hash_table(haproxy_info);
     free_haproxy_servers(haproxy_stats);
     close(haproxy_socket_fd);
@@ -187,15 +188,12 @@ void haproxy_parse_stat_line(char* stat) {
 }
 
 void haproxy_parse_metrics(char* s) {
-    if (haproxy_metrics[0]) return;
-
     char* d = s + 2;
     char* metric = d;
-    int i = 0;
 
     while ((d = strchr(d, ',')) != NULL) {
         *d = '\0';
-        haproxy_metrics[i++] = strdup(metric);
+        arr_push(haproxy_metrics, strdup(metric));
         metric = ++d;
     }
 }
@@ -204,7 +202,8 @@ void haproxy_parse_stat(char* s) {
     char* line = (char*)strtok(s, "\n");
 
     while (line != NULL) {
-        if (line[0] == '#') {
+        if (line[0] == '#' && haproxy_metrics->used == 0) {
+            // init once
             haproxy_parse_metrics(line);
         } else {
             haproxy_parse_stat_line(line);
@@ -242,13 +241,9 @@ char* haproxy_info_value(char* key) {
 }
 
 char* haproxy_metric_value(char* pxname, char* svname, char* metric) {
-    int metric_id;
+    int metric_id = arr_indexOf(haproxy_metrics, metric);
 
-    for (metric_id = 0; metric_id < MAX_NUM_METRICS; metric_id++) {
-        if (haproxy_metrics[metric_id] == NULL) continue;
-        if (strcmp(metric, haproxy_metrics[metric_id]) == 0) break;
-    }
-    if (metric_id == MAX_NUM_METRICS) return NULL;
+    if (metric_id < 0) return NULL;
 
     haproxy_server_t* item = get_haproxy_server(haproxy_stats, pxname, svname);
 

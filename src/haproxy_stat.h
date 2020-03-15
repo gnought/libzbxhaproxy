@@ -23,6 +23,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "array.h"
 #include "common.h"
 #include "log.h"
 #include "haproxy_servers.h"
@@ -32,7 +33,7 @@
 #define HAPROXY_NO_DATA ""
 #define HAPROXY_OK 0
 #define HAPROXY_FAIL -1
-#define MAX_NUM_METRICS 100
+#define INIT_NUM_METRICS 100
 #define MAX_RETRIES 2
 
 int haproxy_socket_fd;
@@ -40,7 +41,7 @@ time_t stat_timestamp;
 time_t info_timestamp;
 ht_hash_table* haproxy_info;
 haproxy_servers_t haproxy_stats;
-char* haproxy_metrics[MAX_NUM_METRICS];
+Array* haproxy_metrics;
 
 int haproxy_init();
 int haproxy_uninit();
