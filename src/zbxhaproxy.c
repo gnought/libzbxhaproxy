@@ -21,12 +21,12 @@ int zbx_module_init(void) {
     zabbix_log(LOG_LEVEL_INFORMATION, "starting agent module %s", HAPROXY_MOD_NAME);
     haproxy_init();
 
-    return SYSINFO_RET_OK;
+    return ZBX_MODULE_OK;
 }
 
 int zbx_module_uninit(void) {
     haproxy_uninit();
-    return SYSINFO_RET_OK;
+    return ZBX_MODULE_OK;
 }
 
 static int zbxhaproxy_info(AGENT_REQUEST* request, AGENT_RESULT* result) {
