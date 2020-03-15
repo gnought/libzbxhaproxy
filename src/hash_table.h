@@ -4,9 +4,9 @@
 #ifndef HASH_TABLES_IN_C_HAST_TABLE_H
 #define HASH_TABLES_IN_C_HAST_TABLE_H
 
-#include <stdlib.h>
-#include <memory.h>
 #include <math.h>
+#include <memory.h>
+#include <stdlib.h>
 //#include <xmalloc.h>
 
 // Hash table structure:
@@ -32,4 +32,4 @@ void ht_del_hash_table(ht_hash_table* hashtable);
 void ht_insert(ht_hash_table* ht, const char* key, const char* value);
 char* ht_search(ht_hash_table* ht, const char* key);
 void ht_delete(ht_hash_table* h, const char* key);
-#endif //HASH_TABLES_IN_C_HAST_TABLE_H
+#endif   //HASH_TABLES_IN_C_HAST_TABLE_H

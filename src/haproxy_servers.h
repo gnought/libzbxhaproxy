@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   haproxy_servers.h
  * Author: kinky
  *
@@ -6,11 +6,11 @@
  */
 
 #ifndef HAPROXY_STAT_LIST_H
-#define	HAPROXY_STAT_LIST_H
+#define HAPROXY_STAT_LIST_H
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // max number of haproxy metrics
 #define MAX_NUM_METRICS 100
@@ -47,5 +47,4 @@ haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t servers, char* pxnam
 haproxy_server_t* new_haproxy_server(char* stat);
 haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_server_t* server);
 
-#endif	/* HAPROXY_STAT_LIST_H */
-
+#endif /* HAPROXY_STAT_LIST_H */

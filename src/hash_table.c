@@ -11,7 +11,7 @@
 int HT_INITIAL_BASE_SIZE = 151;
 int HT_PRIME_1 = 151;
 int HT_PRIME_2 = 163;
-static ht_item HT_DELETED_ITEM = {NULL, NULL};
+static ht_item HT_DELETED_ITEM = { NULL, NULL };
 static ht_item* ht_new_item(const char* k, const char* v);
 static ht_hash_table* ht_new_sized(const int base_size);
 static void ht_del_item(ht_item* item);
@@ -21,11 +21,8 @@ static void ht_resize(ht_hash_table* ht, const int base_size);
 static void ht_resize_up(ht_hash_table* ht);
 static void ht_resize_down(ht_hash_table* ht);
 
-
-
-static ht_item* ht_new_item(const char* k, const char* v)
-{
-    ht_item* item  =   malloc( sizeof(ht_item) );
+static ht_item* ht_new_item(const char* k, const char* v) {
+    ht_item* item = malloc(sizeof(ht_item));
 
     item->key = strdup(k);
     item->value = strdup(v);
@@ -41,12 +38,10 @@ static ht_item* ht_new_item(const char* k, const char* v)
  * which fills the allocated memory with NULL bytes.
  * A NULL entry in the array indicates that the bucket is empty. */
 
-ht_hash_table* ht_new()
-{
+ht_hash_table* ht_new() {
     return ht_new_sized(HT_INITIAL_BASE_SIZE);
 }
-static ht_hash_table* ht_new_sized(const int base_size)
-{
+static ht_hash_table* ht_new_sized(const int base_size) {
     ht_hash_table* ht = malloc(sizeof(ht_hash_table));
     ht->size = base_size;
 
@@ -60,20 +55,17 @@ static ht_hash_table* ht_new_sized(const int base_size)
 /*We also need functions for deleting ht_items and ht_hash_tables,
  * which free the memory we've allocated, so we don't cause memory leaks. */
 
-static void ht_del_item(ht_item* item)
-{
+static void ht_del_item(ht_item* item) {
     free(item->key);
     free(item->value);
     free(item);
 }
-void ht_del_hash_table(ht_hash_table* hashtable)
-{
-    for (int i = 0; i < hashtable->size ; ++i)
-    {
-        ht_item* currentItem = hashtable->items[i];    //iterating through each item in table
+void ht_del_hash_table(ht_hash_table* hashtable) {
+    for (int i = 0; i < hashtable->size; ++i) {
+        ht_item* currentItem = hashtable->items[i];   //iterating through each item in table
 
-        if(currentItem != NULL )
-            ht_del_item(currentItem);                  //freeing currentItem if not null
+        if (currentItem != NULL)
+            ht_del_item(currentItem);   //freeing currentItem if not null
     }
 
     free(hashtable->items);
@@ -123,41 +115,33 @@ Changing the value of a give us a different hash function.
 
 hash("cat", 163, 53) = 3
 */
-static int ht_hash(const char* s, const int a, const int m)
-{
+static int ht_hash(const char* s, const int a, const int m) {
     long hash = 0;
     const int len_s = strlen(s);
 
-    for (int i = 0 ; i < len_s ; i++)
-    {
-        hash += (long)pow( a, len_s - (i+1) ) * s[i];
+    for (int i = 0; i < len_s; i++) {
+        hash += (long)pow(a, len_s - (i + 1)) * s[i];
         hash = hash % m;
     }
     return (int)hash;
 }
-static int ht_get_hash(const char* s, const int num_buckets, const int attempt)
-{
+static int ht_get_hash(const char* s, const int num_buckets, const int attempt) {
     const int hash_a = ht_hash(s, HT_PRIME_1, num_buckets);
     const int hash_b = ht_hash(s, HT_PRIME_2, num_buckets);
     return (hash_a + (attempt * (hash_b + 1))) % num_buckets;
 }
-void ht_insert(ht_hash_table* ht, const char* key, const char* value)
-{
+void ht_insert(ht_hash_table* ht, const char* key, const char* value) {
     ht_item* item = ht_new_item(key, value);
     int index = ht_get_hash(item->key, ht->size, 0);
     ht_item* cur_item = ht->items[index];
     int i = 1;
     const int load = ht->count * 100 / ht->size;
-    if (load > 70)
-    {
+    if (load > 70) {
         ht_resize_up(ht);
     }
-    while (cur_item != NULL)
-    {
-        if (cur_item != &HT_DELETED_ITEM)
-        {
-            if (strcmp(cur_item->key, key) == 0)
-            {
+    while (cur_item != NULL) {
+        if (cur_item != &HT_DELETED_ITEM) {
+            if (strcmp(cur_item->key, key) == 0) {
                 ht_del_item(cur_item);
                 ht->items[index] = item;
                 return;
@@ -171,18 +155,14 @@ void ht_insert(ht_hash_table* ht, const char* key, const char* value)
     ht->count++;
 }
 
-char* ht_search(ht_hash_table* ht, const char* key)
-{
+char* ht_search(ht_hash_table* ht, const char* key) {
     int index = ht_get_hash(key, ht->size, 0);
     ht_item* item = ht->items[index];
     int i = 1;
 
-    while (item != NULL)
-    {
-        if (item != &HT_DELETED_ITEM)
-        {
-            if (strcmp(item->key, key) == 0)
-            {
+    while (item != NULL) {
+        if (item != &HT_DELETED_ITEM) {
+            if (strcmp(item->key, key) == 0) {
                 return item->value;
             }
         }
@@ -193,22 +173,17 @@ char* ht_search(ht_hash_table* ht, const char* key)
     return NULL;
 }
 
-void ht_delete(ht_hash_table* ht, const char* key)
-{
+void ht_delete(ht_hash_table* ht, const char* key) {
     int index = ht_get_hash(key, ht->size, 0);
     ht_item* item = ht->items[index];
     int i = 1;
     const int load = ht->count * 100 / ht->size;
-    if (load < 10)
-    {
+    if (load < 10) {
         ht_resize_down(ht);
     }
-    while (item != NULL)
-    {
-        if (item != &HT_DELETED_ITEM)
-        {
-            if (strcmp(item->key, key) == 0)
-            {
+    while (item != NULL) {
+        if (item != &HT_DELETED_ITEM) {
+            if (strcmp(item->key, key) == 0) {
                 ht_del_item(item);
                 ht->items[index] = &HT_DELETED_ITEM;
             }

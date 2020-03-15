@@ -2,7 +2,7 @@
 
 /*
  * compare haproxy `server` name with `pxname`,`svname`
- * note: haproxy server name have 2 part: 
+ * note: haproxy server name have 2 part:
  *      `pxname` - proxy name
  *      `svname` - server name
  * return:
@@ -15,14 +15,14 @@ int check_haproxy_server_name(haproxy_server_t* server, char* pxname, char* svna
 
     sv_pxname = server->stat;
     sv_svname = server->stat + server->offsets[1];
-    
+
     return (strcmp(sv_pxname, pxname) == 0 && strcmp(sv_svname, svname) == 0);
 }
 
 void free_haproxy_servers(haproxy_servers_t servers) {
-    haproxy_server_t *cur = servers;
-    haproxy_server_t *next;
-    
+    haproxy_server_t* cur = servers;
+    haproxy_server_t* next;
+
     while (cur != NULL) {
         next = cur->next;
         free(cur);
@@ -38,14 +38,14 @@ void free_haproxy_servers(haproxy_servers_t servers) {
  */
 haproxy_server_t* get_haproxy_server(haproxy_servers_t servers, char* pxname, char* svname) {
     haproxy_server_t* sv = servers;
-    
+
     while (sv != NULL) {
         if (check_haproxy_server_name(sv, pxname, svname)) {
             return sv;
         }
         sv = sv->next;
     }
-    
+
     return NULL;
 }
 
@@ -60,7 +60,7 @@ haproxy_server_t* get_haproxy_server(haproxy_servers_t servers, char* pxname, ch
 haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, char* svname) {
     haproxy_server_t* sv = list;
     haproxy_server_t* prev_sv = list;
-    
+
     while (sv != NULL) {
         if (check_haproxy_server_name(sv, pxname, svname)) {
             return prev_sv;
@@ -68,7 +68,7 @@ haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, 
         prev_sv = sv;
         sv = sv->next;
     }
-    
+
     return prev_sv;
 }
 
@@ -80,7 +80,7 @@ haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, 
  */
 haproxy_server_t* new_haproxy_server(char* stat) {
     haproxy_server_t* sv;
-    
+
     if ((sv = (haproxy_server_t*)malloc(sizeof(haproxy_server_t))) == NULL) {
         return NULL;
     }
@@ -88,13 +88,13 @@ haproxy_server_t* new_haproxy_server(char* stat) {
     memset(sv->stat, 0, MAX_SIZE_STAT_LINE);
     sv->num_offsets = 0;
     strcpy(sv->stat, stat);
-    
+
     return sv;
 }
 
 /*
  * update haproxy server list `servers` with `server`
- * return: 
+ * return:
  *      pointer to haproxy server list
  */
 haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_server_t* server) {
@@ -102,10 +102,10 @@ haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_serv
     char* svname = NULL;
     haproxy_server_t* prev = NULL;
 
-    if (servers == NULL) 
+    if (servers == NULL)
         // `server` is first in list
         return server;
-    
+
     pxname = server->stat;
     svname = server->stat + server->offsets[1];
     prev = get_prev_haproxy_server(servers, pxname, svname);
