@@ -8,20 +8,17 @@
 #ifndef ZBXHAPROXY_H
 #define ZBXHAPROXY_H
 
-#define HAPROXY_MOD_NAME "zbxhaproxy"
-
 #include "haproxy_stat.h"
 
+#include "module.h"
+#include "sysinc.h"
+
+#define HAPROXY_MOD_NAME "zbxhaproxy"
 #define HAVE_TIME_H 1
 #define HAVE_STDARG_H 1
 #define HAVE_STDINT_H 1
 // fix <bsd/sys/types.h> for zabbix 3.0
 typedef unsigned char u_char;
-
-#include <common.h>
-#include <log.h>
-#include <module.h>
-#include <sysinc.h>
 
 static int zbxhaproxy_info(AGENT_REQUEST* request, AGENT_RESULT* result);
 static int zbxhaproxy_test(AGENT_REQUEST* request, AGENT_RESULT* result);

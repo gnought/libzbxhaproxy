@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -21,6 +22,9 @@
 #include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "common.h"
+#include "log.h"
 #include "haproxy_servers.h"
 #include "hash_table.h"
 

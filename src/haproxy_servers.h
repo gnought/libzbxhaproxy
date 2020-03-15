@@ -9,8 +9,13 @@
 #define HAPROXY_STAT_LIST_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <time.h>
+
+#include "common.h"
 
 // max number of haproxy metrics
 #define MAX_NUM_METRICS 100
