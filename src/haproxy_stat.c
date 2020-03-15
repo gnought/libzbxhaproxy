@@ -91,7 +91,7 @@ char* haproxy_discovery(char* socket) {
 }
 
 int haproxy_recv(char** ret_data) {
-    assert(*ret_data != NULL);
+    assert(ret_data != NULL);
 
     int data_size = 4096, bytes_read, total_bytes_read = 0;
     char buffer[4096];
