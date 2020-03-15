@@ -9,7 +9,8 @@ int zbx_module_api_version(void) {
 }
 
 void zbx_module_item_timeout(int timeout) {
-    item_timeout = timeout;
+    stimeout.tv_sec = timeout;
+    stimeout.tv_usec = 0;
 }
 
 ZBX_METRIC* zbx_module_item_list(void) {

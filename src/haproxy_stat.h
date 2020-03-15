@@ -43,6 +43,8 @@ ht_hash_table* haproxy_info;
 haproxy_servers_t haproxy_stats;
 Array* haproxy_metrics;
 
+static struct timeval stimeout;
+
 int haproxy_init();
 int haproxy_uninit();
 void haproxy_parse_stat_line(char* stat);

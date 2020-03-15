@@ -31,8 +31,6 @@ void zbx_module_item_timeout(int timeout);
 int zbx_module_init(void);
 int zbx_module_uninit(void);
 
-static int item_timeout = 0;
-
 static ZBX_METRIC keys[] =
     {
         { "haproxy.info", CF_HAVEPARAMS, zbxhaproxy_info, "/run/haproxy/admin.sock,Version" },

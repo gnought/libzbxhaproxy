@@ -1,6 +1,8 @@
 #include "haproxy_stat.h"
 
 int haproxy_init() {
+    stimeout.tv_sec = 30;
+    stimeout.tv_usec = 0;
     haproxy_info = ht_new();
     haproxy_socket_fd = 0;
     haproxy_stats = NULL;
@@ -35,6 +37,13 @@ int haproxy_connect(char* socket_path) {
     for (int i = 0; i < MAX_RETRIES; i++) {
         if (connect(haproxy_socket_fd, (struct sockaddr*)&haproxy_stat_addr,
                     addr_length) != -1) {
+            // socket input/output timeout
+            if (setsockopt(haproxy_socket_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&stimeout, sizeof(stimeout)) < 0) {
+                zabbix_log(LOG_LEVEL_WARNING, "Cannot set SO_RCVTIMEO socket timeout: %ld seconds", stimeout.tv_sec);
+            }
+            if (setsockopt(haproxy_socket_fd, SOL_SOCKET, SO_SNDTIMEO, (char*)&stimeout, sizeof(stimeout)) < 0) {
+                zabbix_log(LOG_LEVEL_WARNING, "Cannot set SO_SNDTIMEO socket timeout: %ld seconds", stimeout.tv_sec);
+            }
             return HAPROXY_OK;
         }
     }
