@@ -1,5 +1,20 @@
 #include "haproxy_stat.h"
 
+static int haproxy_connect(char* socket_path);
+static int haproxy_cmd(char* socket, char* cmd);
+static int haproxy_recv(char** ret_data);
+
+static int haproxy_update_info(char* socket);
+static int haproxy_update_stat(char* socket);
+
+static char* haproxy_info_value(char* name);
+static char* haproxy_metric_value(char* pxname, char* svname, char* metric);
+
+static void haproxy_parse_info(char* s);
+static void haproxy_parse_metrics(char* header);
+static void haproxy_parse_stat(char* s);
+static void haproxy_parse_stat_line(char* stat);
+
 int haproxy_init() {
     stimeout.tv_sec = 30;
     stimeout.tv_usec = 0;
@@ -21,7 +36,7 @@ int haproxy_uninit() {
     return HAPROXY_OK;
 }
 
-int haproxy_connect(char* socket_path) {
+static int haproxy_connect(char* socket_path) {
     struct sockaddr_un haproxy_stat_addr;
     size_t addr_length;
 
@@ -50,7 +65,7 @@ int haproxy_connect(char* socket_path) {
     return HAPROXY_FAIL;
 }
 
-int haproxy_cmd(char* socket, char* cmd) {
+static int haproxy_cmd(char* socket, char* cmd) {
     do {
         if (send(haproxy_socket_fd, cmd, strlen(cmd), MSG_NOSIGNAL) > 0) {
             return HAPROXY_OK;
@@ -96,7 +111,7 @@ char* haproxy_discovery(char* socket) {
     return data;
 }
 
-int haproxy_recv(char** ret_data) {
+static int haproxy_recv(char** ret_data) {
     assert(ret_data != NULL);
 
     int data_size = 4096, bytes_read, total_bytes_read = 0;
@@ -130,7 +145,7 @@ int haproxy_recv(char** ret_data) {
     return HAPROXY_OK;
 }
 
-int haproxy_update_info(char* socket) {
+static int haproxy_update_info(char* socket) {
     char* recv_buffer = NULL;
     if (haproxy_cmd(socket, "show info\n") == HAPROXY_FAIL) goto get_info_fail;
     if (haproxy_recv(&recv_buffer) == HAPROXY_FAIL) goto get_info_fail;
@@ -142,7 +157,7 @@ get_info_fail:
     return HAPROXY_FAIL;
 }
 
-int haproxy_update_stat(char* socket) {
+static int haproxy_update_stat(char* socket) {
     char* recv_buffer = NULL;
     if (haproxy_cmd(socket, "show stat\n") == HAPROXY_FAIL) goto get_stat_fail;
     if (haproxy_recv(&recv_buffer) == HAPROXY_FAIL) goto get_stat_fail;
@@ -154,7 +169,7 @@ get_stat_fail:
     return HAPROXY_FAIL;
 }
 
-void haproxy_parse_info(char* s) {
+static void haproxy_parse_info(char* s) {
     char* d = NULL;
     char key[255], value[255];
     int n = 0;
@@ -179,7 +194,7 @@ void haproxy_parse_info(char* s) {
     }
 }
 
-void haproxy_parse_stat_line(char* stat) {
+static void haproxy_parse_stat_line(char* stat) {
     int i = 0;
 
     haproxy_server_t* item = new_haproxy_server(stat);
@@ -196,8 +211,8 @@ void haproxy_parse_stat_line(char* stat) {
     haproxy_stats = update_haproxy_servers(haproxy_stats, item);
 }
 
-void haproxy_parse_metrics(char* s) {
-    char* d = s + 2;
+static void haproxy_parse_metrics(char* header) {
+    char* d = header + 2;
     char* metric = d;
 
     while ((d = strchr(d, ',')) != NULL) {
@@ -207,7 +222,7 @@ void haproxy_parse_metrics(char* s) {
     }
 }
 
-void haproxy_parse_stat(char* s) {
+static void haproxy_parse_stat(char* s) {
     char* line = (char*)strtok(s, "\n");
 
     while (line != NULL) {
@@ -245,11 +260,11 @@ char* haproxy_request_info(char* socket, char* key) {
     return result;
 }
 
-char* haproxy_info_value(char* key) {
+static char* haproxy_info_value(char* key) {
     return ht_search(haproxy_info, key);
 }
 
-char* haproxy_metric_value(char* pxname, char* svname, char* metric) {
+static char* haproxy_metric_value(char* pxname, char* svname, char* metric) {
     int metric_id = arr_indexOf(haproxy_metrics, metric);
 
     if (metric_id < 0) return NULL;

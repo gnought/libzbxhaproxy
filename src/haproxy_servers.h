@@ -45,11 +45,9 @@ typedef enum {
     listener
 } haproxy_server_type_t;
 
-int check_haproxy_server_name(haproxy_server_t* server, char* pxname, char* svname);
 void free_haproxy_servers(haproxy_servers_t servers);
 haproxy_server_t* get_haproxy_server(haproxy_servers_t servers, char* pxname, char* svname);
-haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t servers, char* pxname, char* svname);
-haproxy_server_t* new_haproxy_server(char* stat);
+haproxy_server_t* new_haproxy_server(char* stat, int metrics_num);
 haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_server_t* server);
 
 #endif /* HAPROXY_STAT_LIST_H */

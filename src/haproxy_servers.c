@@ -1,5 +1,8 @@
 #include "haproxy_servers.h"
 
+static haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t servers, char* pxname, char* svname);
+static int check_haproxy_server_name(haproxy_server_t* server, char* pxname, char* svname);
+
 /*
  * compare haproxy `server` name with `pxname`,`svname`
  * note: haproxy server name have 2 part:
@@ -9,7 +12,7 @@
  *       1 - is equal
  *       0 - is not equal
  */
-int check_haproxy_server_name(haproxy_server_t* server, char* pxname, char* svname) {
+static int check_haproxy_server_name(haproxy_server_t* server, char* pxname, char* svname) {
     char* sv_pxname = server->stat;
     char* sv_svname = server->stat + server->offsets[1];
 
@@ -54,7 +57,7 @@ haproxy_server_t* get_haproxy_server(haproxy_servers_t servers, char* pxname, ch
  *      NULL - server list is empty
  */
 
-haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, char* svname) {
+static haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, char* svname) {
     haproxy_server_t* sv = list;
     haproxy_server_t* prev_sv = list;
 
@@ -75,7 +78,7 @@ haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* pxname, 
  *      pointer to new server
  *      NULL - memory allocation error
  */
-haproxy_server_t* new_haproxy_server(char* stat) {
+haproxy_server_t* new_haproxy_server(char* stat, int metrics_num) {
     haproxy_server_t* sv = (haproxy_server_t*)zbx_malloc(NULL, sizeof(haproxy_server_t));
 
     sv->next = NULL;
