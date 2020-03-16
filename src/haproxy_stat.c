@@ -201,7 +201,8 @@ static void haproxy_parse_info(char* s) {
 static void haproxy_parse_stat_line(char* stat) {
     int i = 0;
 
-    haproxy_server_t* item = new_haproxy_server(stat);
+    haproxy_server_t* item = new_haproxy_server(stat, haproxy_metrics->size);
+
     item->offsets[i++] = 0;
     char* d = item->stat;
 
@@ -210,7 +211,6 @@ static void haproxy_parse_stat_line(char* stat) {
         item->offsets[i++] = (d - item->stat + 1) / sizeof(char);
         d++;
     }
-    item->num_offsets = i;
 
     haproxy_stats = update_haproxy_servers(haproxy_stats, item);
 }

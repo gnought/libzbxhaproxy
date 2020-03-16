@@ -25,6 +25,10 @@ void free_haproxy_servers(haproxy_servers_t servers) {
 
     while (cur != NULL) {
         next = cur->next;
+        zbx_free(cur->stat);
+        cur->stat = NULL;
+        zbx_free(cur->offsets);
+        cur->offsets = NULL;
         zbx_free(cur);
         cur = next;
     }
@@ -81,10 +85,9 @@ static haproxy_server_t* get_prev_haproxy_server(haproxy_servers_t list, char* p
 haproxy_server_t* new_haproxy_server(char* stat, int metrics_num) {
     haproxy_server_t* sv = (haproxy_server_t*)zbx_malloc(NULL, sizeof(haproxy_server_t));
 
+    sv->stat = zbx_strdup(NULL, stat);
+    sv->offsets = (unsigned int*)zbx_calloc(NULL, metrics_num, sizeof(unsigned int));
     sv->next = NULL;
-    memset(sv->stat, 0, MAX_SIZE_STAT_LINE);
-    sv->num_offsets = 0;
-    zbx_strlcpy(sv->stat, stat, MAX_SIZE_STAT_LINE);
 
     return sv;
 }
@@ -105,6 +108,10 @@ haproxy_servers_t update_haproxy_servers(haproxy_servers_t servers, haproxy_serv
     if (prev->next != NULL) {
         // replace exists server in list
         server->next = prev->next->next;
+        zbx_free(prev->next->stat);
+        prev->next->stat = NULL;
+        zbx_free(prev->next->offsets);
+        prev->next->offsets = NULL;
         zbx_free(prev->next);
         prev->next = server;
     } else {

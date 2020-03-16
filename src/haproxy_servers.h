@@ -17,20 +17,13 @@
 
 #include "common.h"
 
-// max number of haproxy metrics
-#define MAX_NUM_METRICS 100
-// max length of haproxy server statistics line
-#define MAX_SIZE_STAT_LINE 8192
-
 typedef struct haproxy_server_c {
     // full stat line (character ',' replaced by '\0')
-    char stat[MAX_SIZE_STAT_LINE];
+    char* stat;
     // metric value offset in the stat line (0 - pxname, 1 - svname ...))
     // get metric value by (stat + offsets[metric_index]])
     // offset[0] is 0 always
-    unsigned int offsets[MAX_NUM_METRICS];
-    // number of metrics in stat line
-    unsigned int num_offsets;
+    unsigned int* offsets;
     // next haproxy server pointer
     struct haproxy_server_c* next;
 } haproxy_server_t;
