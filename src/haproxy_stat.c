@@ -1,5 +1,7 @@
 #include "haproxy_stat.h"
 
+static char* line_metric_header;
+
 static int haproxy_connect(char* socket_path);
 static int haproxy_cmd(char* socket, char* cmd);
 static int haproxy_recv(char** ret_data);
@@ -16,6 +18,7 @@ static void haproxy_parse_stat(char* s);
 static void haproxy_parse_stat_line(char* stat);
 
 int haproxy_init() {
+    line_metric_header = NULL;
     stimeout.tv_sec = 30;
     stimeout.tv_usec = 0;
     haproxy_info = ht_new();
@@ -29,6 +32,7 @@ int haproxy_init() {
 }
 
 int haproxy_uninit() {
+    zbx_free(line_metric_header);
     arr_free(haproxy_metrics);
     ht_del_hash_table(haproxy_info);
     free_haproxy_servers(haproxy_stats);
@@ -212,6 +216,13 @@ static void haproxy_parse_stat_line(char* stat) {
 }
 
 static void haproxy_parse_metrics(char* header) {
+
+    if (line_metric_header == NULL) {
+        line_metric_header = zbx_strdup(NULL, header);
+    } else if (strcmp(header, line_metric_header) == 0) {
+        return;
+    }
+
     char* d = header + 2;
     char* metric = d;
 
@@ -226,8 +237,7 @@ static void haproxy_parse_stat(char* s) {
     char* line = (char*)strtok(s, "\n");
 
     while (line != NULL) {
-        if (line[0] == '#' && haproxy_metrics->used == 0) {
-            // init once
+        if (line[0] == '#') {
             haproxy_parse_metrics(line);
         } else {
             haproxy_parse_stat_line(line);
