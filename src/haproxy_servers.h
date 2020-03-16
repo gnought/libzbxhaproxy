@@ -38,12 +38,12 @@ typedef struct haproxy_server_c {
 // haproxy servers stored as simple one-direction list
 typedef haproxy_server_t* haproxy_servers_t;
 //
-typedef enum {
-    frontend,
-    backend,
-    server,
-    listener
-} haproxy_server_type_t;
+// typedef enum {
+//     frontend,
+//     backend,
+//     server,
+//     listener
+// } haproxy_server_type_t;
 
 void free_haproxy_servers(haproxy_servers_t servers);
 haproxy_server_t* get_haproxy_server(haproxy_servers_t servers, char* pxname, char* svname);
