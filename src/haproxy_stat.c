@@ -24,7 +24,7 @@ int haproxy_init() {
     haproxy_info = ht_new();
     haproxy_socket_fd = 0;
     haproxy_stats = NULL;
-    haproxy_metrics = arr_init(INIT_NUM_METRICS);
+    haproxy_metrics = arr_new(INIT_NUM_METRICS);
     stat_timestamp = time(NULL) - 2 * CACHE_TTL;
     info_timestamp = time(NULL) - 2 * CACHE_TTL;
 
@@ -226,9 +226,10 @@ static void haproxy_parse_metrics(char* header) {
     char* d = header + 2;
     char* metric = d;
 
+    arr_flush(haproxy_metrics);
     while ((d = strchr(d, ',')) != NULL) {
         *d = '\0';
-        arr_push(haproxy_metrics, strdup(metric));
+        arr_push(haproxy_metrics, metric);
         metric = ++d;
     }
 }
