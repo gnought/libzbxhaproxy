@@ -255,10 +255,7 @@ char* haproxy_request_stat(char* socket, char* pxname, char* svname, char* metri
         stat_timestamp = time(NULL);
     }
 
-    char* result = haproxy_metric_value(pxname, svname, metric);
-    if (result == NULL) return HAPROXY_NO_DATA;
-
-    return result;
+    return haproxy_metric_value(pxname, svname, metric);
 }
 
 char* haproxy_request_info(char* socket, char* key) {
@@ -280,12 +277,12 @@ static char* haproxy_info_value(char* key) {
 static char* haproxy_metric_value(char* pxname, char* svname, char* metric) {
     int metric_id = arr_indexOf(haproxy_metrics, metric);
 
-    if (metric_id < 0) return NULL;
+    if (metric_id < 0) return ZBX_NOTSUPPORTED;
 
     haproxy_server_t* item = get_haproxy_server(haproxy_stats, pxname, svname);
 
     if (item == NULL) {
-        return NULL;
+        return HAPROXY_NO_DATA;
     }
 
     return item->stat + item->offsets[metric_id];
