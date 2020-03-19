@@ -155,6 +155,7 @@ static int haproxy_update_info(char* socket) {
     if (haproxy_recv(&recv_buffer) == HAPROXY_FAIL) goto get_info_fail;
     haproxy_parse_info(recv_buffer);
     zbx_free(recv_buffer);
+    close(haproxy_socket_fd);
     return HAPROXY_OK;
 
 get_info_fail:
@@ -167,6 +168,7 @@ static int haproxy_update_stat(char* socket) {
     if (haproxy_recv(&recv_buffer) == HAPROXY_FAIL) goto get_stat_fail;
     haproxy_parse_stat(recv_buffer);
     zbx_free(recv_buffer);
+    close(haproxy_socket_fd);
     return HAPROXY_OK;
 
 get_stat_fail:
